@@ -18,7 +18,6 @@ const movesEl = document.getElementById("moves");
 const targetEl = document.getElementById("target");
 const levelEl = document.getElementById("level");
 const bannerEl = document.getElementById("banner");
-const restartBtn = document.getElementById("restart");
 const nextLevelBtn = document.getElementById("nextLevel");
 const soundToggleBtn = document.getElementById("soundToggle");
 const cheatToggleBtn = document.getElementById("cheatToggle");
@@ -87,6 +86,9 @@ function renderGrid() {
       if (cell.special) {
         dot.classList.add("special", cell.special);
         dot.dataset.special = cell.special;
+      }
+      if (cell.pendingBomb) {
+        dot.classList.add("arming");
       }
       gridEl.appendChild(dot);
       cell.fall = 0;
@@ -214,10 +216,15 @@ function waitForFallComplete() {
 function resizeCanvas() {
   boardRect = boardEl.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
+  if (boardRect.width === 0 || boardRect.height === 0) {
+    requestAnimationFrame(resizeCanvas);
+    return;
+  }
   canvas.width = boardRect.width * dpr;
   canvas.height = boardRect.height * dpr;
   canvas.style.width = `${boardRect.width}px`;
   canvas.style.height = `${boardRect.height}px`;
+  canvas.style.display = "block";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   computeGridMetrics();
   computeFallStep();
@@ -300,8 +307,9 @@ function drawPath() {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
-  const drawLine = (color, width) => {
+  const drawLine = (color, width, alpha = 1) => {
     ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
     ctx.lineWidth = width;
     ctx.beginPath();
     selectedPath.forEach((point, index) => {
@@ -316,8 +324,12 @@ function drawPath() {
     ctx.stroke();
   };
 
-  drawLine("rgba(0, 0, 0, 0.25)", 16);
-  drawLine(COLORS[selectedColor], 10);
+  ctx.shadowColor = "rgba(0, 0, 0, 0.25)";
+  ctx.shadowBlur = 6;
+  drawLine("rgba(0, 0, 0, 0.35)", 14, 1);
+  ctx.shadowBlur = 0;
+  drawLine(COLORS[selectedColor], 10, 1);
+  ctx.globalAlpha = 1;
 }
 
 function getDotCenter({ row, col }) {
@@ -366,7 +378,7 @@ function startSelection(dot) {
   isDragging = true;
   highlightPath();
   updateLoopIndicators();
-  drawPath();
+  requestAnimationFrame(drawPath);
   playSound("start");
 }
 
@@ -386,7 +398,7 @@ function extendSelection(dot) {
     looped = true;
     highlightPath();
     updateLoopIndicators();
-    drawPath();
+    requestAnimationFrame(drawPath);
     return;
   }
 
@@ -396,7 +408,7 @@ function extendSelection(dot) {
       looped = false;
       highlightPath();
       updateLoopIndicators();
-      drawPath();
+      requestAnimationFrame(drawPath);
     }
     return;
   }
@@ -406,7 +418,7 @@ function extendSelection(dot) {
   looped = false;
   highlightPath();
   updateLoopIndicators();
-  drawPath();
+  requestAnimationFrame(drawPath);
 }
 
 function endSelection() {
@@ -424,9 +436,7 @@ function endSelection() {
   const containsInside = insideCoords.length > 0;
   let spawnSpecial = null;
   const last = selectedPath[selectedPath.length - 1];
-  if (!looped && selectedPath.length >= 5) {
-    spawnSpecial = { type: "row", row: last.row, col: last.col, color: selectedColor };
-  }
+  // Special dots on hold for now (except bombs from loops).
 
   const toClear = looped ? collectColor(selectedColor) : selectedPath.map((p) => ({ row: p.row, col: p.col }));
   const pendingBombs = [];
@@ -487,13 +497,14 @@ function applyClear(coords, spawnSpecial, wasLoop, pendingBombs = []) {
       waitForFallComplete().then(() => {
         setTimeout(() => {
           explodePendingBombs();
-        }, 500);
+        }, 1000);
       });
     }
     return;
   }
   isAnimating = true;
   const clearSet = new Set();
+  let bombTriggered = false;
 
   function addCoord(row, col) {
     if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return;
@@ -511,7 +522,7 @@ function applyClear(coords, spawnSpecial, wasLoop, pendingBombs = []) {
           addCoord(row + dr, col + dc);
         }
       }
-      playSound("bomb");
+      bombTriggered = true;
     }
     if (cell.special === "row") {
       for (let c = 0; c < COLS; c += 1) addCoord(row, c);
@@ -530,7 +541,8 @@ function applyClear(coords, spawnSpecial, wasLoop, pendingBombs = []) {
 
   const multiplier = wasLoop ? 2 : 1;
   score += finalCoords.length * multiplier;
-  if (wasLoop) playSound("loop");
+  if (bombTriggered) playSound("bomb");
+  else if (wasLoop) playSound("loop");
   else playSound("clear");
 
   animateClear(finalCoords, () => {
@@ -548,7 +560,7 @@ function applyClear(coords, spawnSpecial, wasLoop, pendingBombs = []) {
       waitForFallComplete().then(() => {
         setTimeout(() => {
           explodePendingBombs();
-        }, 500);
+        }, 1000);
       });
     } else {
       isAnimating = false;
@@ -812,7 +824,11 @@ window.addEventListener("resize", () => {
   if (selectedPath.length) drawPath();
 });
 
-restartBtn.addEventListener("click", restartGame);
+window.addEventListener("load", () => {
+  resizeCanvas();
+  if (selectedPath.length) drawPath();
+});
+
 nextLevelBtn.addEventListener("click", nextLevel);
 soundToggleBtn.addEventListener("click", toggleSound);
 cheatToggleBtn.addEventListener("click", toggleCheatMode);
