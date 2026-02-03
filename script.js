@@ -213,8 +213,12 @@ function waitForFallComplete() {
 
 function resizeCanvas() {
   boardRect = boardEl.getBoundingClientRect();
-  canvas.width = boardRect.width;
-  canvas.height = boardRect.height;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = boardRect.width * dpr;
+  canvas.height = boardRect.height * dpr;
+  canvas.style.width = `${boardRect.width}px`;
+  canvas.style.height = `${boardRect.height}px`;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   computeGridMetrics();
   computeFallStep();
 }
@@ -295,22 +299,25 @@ function drawPath() {
 
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  ctx.strokeStyle = COLORS[selectedColor];
-  ctx.lineWidth = 12;
-  ctx.shadowColor = "rgba(0, 0, 0, 0.2)";
-  ctx.shadowBlur = 8;
 
-  ctx.beginPath();
-  selectedPath.forEach((point, index) => {
-    const center = getDotCenter(point);
-    if (index === 0) ctx.moveTo(center.x, center.y);
-    else ctx.lineTo(center.x, center.y);
-  });
-  if (looped && selectedPath.length > 2) {
-    const first = getDotCenter(selectedPath[0]);
-    ctx.lineTo(first.x, first.y);
-  }
-  ctx.stroke();
+  const drawLine = (color, width) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    selectedPath.forEach((point, index) => {
+      const center = getDotCenter(point);
+      if (index === 0) ctx.moveTo(center.x, center.y);
+      else ctx.lineTo(center.x, center.y);
+    });
+    if (looped && selectedPath.length > 2) {
+      const first = getDotCenter(selectedPath[0]);
+      ctx.lineTo(first.x, first.y);
+    }
+    ctx.stroke();
+  };
+
+  drawLine("rgba(0, 0, 0, 0.25)", 16);
+  drawLine(COLORS[selectedColor], 10);
 }
 
 function getDotCenter({ row, col }) {
@@ -453,6 +460,7 @@ function endSelection() {
     if (levelIndex < LEVELS.length - 1) {
       showBanner(`Level ${levelIndex + 1} complete!`, "win");
       nextLevelBtn.hidden = false;
+      nextLevelBtn.classList.add("pulse");
     } else {
       showBanner("All levels cleared!", "win");
     }
@@ -682,6 +690,7 @@ function startLevel(index) {
   moves = currentLevel().moves;
   levelComplete = false;
   nextLevelBtn.hidden = true;
+  nextLevelBtn.classList.remove("pulse");
   selectedPath = [];
   looped = false;
   selectedColor = null;
