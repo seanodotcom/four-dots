@@ -334,8 +334,13 @@ function highlightPath() {
 }
 
 function updateLoopIndicators() {
-  gridEl.querySelectorAll(".dot").forEach((dot) => dot.classList.remove("bomb-potential"));
+  gridEl
+    .querySelectorAll(".dot")
+    .forEach((dot) => dot.classList.remove("bomb-potential", "pulse"));
   if (!looped) return;
+  gridEl
+    .querySelectorAll(`.dot[data-color="${selectedColor}"]`)
+    .forEach((dot) => dot.classList.add("pulse"));
   const inside = getLoopInsideCoords();
   inside.forEach(({ row, col }) => {
     const dot = gridEl.querySelector(`.dot[data-row="${row}"][data-col="${col}"]`);
