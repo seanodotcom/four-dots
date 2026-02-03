@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Four Dots</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scene">
+    <header class="topbar">
+      <div>
+        <h1>Four Dots</h1>
+        <p class="subtitle">Connect matching dots. Make a loop to clear a whole color.</p>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <span class="label">Score</span>
+          <span id="score" class="value">0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Level</span>
+          <span id="level" class="value">1</span>
+        </div>
+        <div class="stat">
+          <span class="label">Moves</span>
+          <span id="moves" class="value">30</span>
+        </div>
+        <div class="stat">
+          <span class="label">Target</span>
+          <span id="target" class="value">200</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="board-wrap">
+      <div class="board" id="board" aria-label="Game board" role="application">
+        <canvas id="pathCanvas"></canvas>
+        <div class="grid" id="grid"></div>
+        <div id="banner" class="banner board-banner" aria-live="polite"></div>
+      </div>
+      <aside class="panel">
+        <div class="panel-card">
+          <h2>How to Play</h2>
+          <ul>
+            <li>Drag across adjacent dots of the same color.</li>
+            <li>Release to clear the chain.</li>
+            <li>Make a loop to clear every dot of that color.</li>
+          </ul>
+        </div>
+        <div class="panel-card">
+          <h2>Goal</h2>
+          <p>Reach the target score before you run out of moves.</p>
+          <button id="nextLevel" class="cta ghost" hidden>Next Level</button>
+          <button id="soundToggle" class="cta ghost">Sound: On</button>
+          <button id="cheatToggle" class="cta ghost">Cheat Mode: Off</button>
+          <button id="restart" class="cta">Restart</button>
+        </div>
+      </aside>
+    </main>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
