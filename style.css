@@ -37,6 +37,20 @@ body {
   position: relative;
 }
 
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-mark {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  position: relative;
+  top: -6px;
+}
+
 h1 {
   font-size: clamp(2rem, 3vw, 3rem);
   margin: 0 0 6px;
@@ -505,6 +519,12 @@ h1 {
 
   h1 {
     font-size: 1.7rem;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    top: -4px;
   }
 
   .version {
