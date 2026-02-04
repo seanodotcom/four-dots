@@ -324,6 +324,24 @@ h1 {
   color: #246f39;
 }
 
+.board.gameover {
+  pointer-events: none;
+  filter: saturate(0.75);
+}
+
+.board.gameover .grid {
+  opacity: 0.55;
+  filter: grayscale(0.2);
+}
+
+.board.gameover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.8));
+  z-index: 2;
+}
+
 .banner.lose {
   color: #9d2a2a;
 }
@@ -336,4 +354,76 @@ h1 {
   .panel {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
+}
+
+@media (max-width: 600px) {
+  .scene {
+    padding: 20px 16px 28px;
+  }
+
+  .topbar {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: 1.7rem;
+  }
+
+  .version {
+    font-size: 0.8rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .stat {
+    min-width: 0;
+    flex: 1 1 calc(50% - 10px);
+    padding: 8px 12px;
+    border-radius: 14px;
+  }
+
+  .label {
+    font-size: 0.65rem;
+  }
+
+  .value {
+    font-size: 1.15rem;
+  }
+
+  .board-wrap {
+    gap: 18px;
+  }
+
+  .board {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .grid {
+    gap: 8px;
+  }
+}
+
+.debug {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.celebrate {
+  animation: celebrate-bounce 0.8s ease-in-out both;
+}
+
+@keyframes celebrate-bounce {
+  0% { transform: translateY(0); }
+  30% { transform: translateY(calc(var(--jump, -8px))); }
+  60% { transform: translateY(0); }
+  100% { transform: translateY(0); }
 }

@@ -21,12 +21,16 @@ const bannerEl = document.getElementById("banner");
 const nextLevelBtn = document.getElementById("nextLevel");
 const soundToggleBtn = document.getElementById("soundToggle");
 const cheatToggleBtn = document.getElementById("cheatToggle");
+const tryAgainBtn = document.getElementById("tryAgain");
+const debugWinBtn = document.getElementById("debugWin");
+const debugLoseBtn = document.getElementById("debugLose");
 
 let grid = [];
 let score = 0;
 let moves = LEVELS[0].moves;
 let levelIndex = 0;
 let levelComplete = false;
+let gameOver = false;
 let selectedPath = [];
 let isDragging = false;
 let selectedColor = null;
@@ -466,16 +470,24 @@ function endSelection() {
 
   if (score >= currentLevel().target) {
     levelComplete = true;
+    gameOver = false;
     updateBoardState();
     if (levelIndex < LEVELS.length - 1) {
       showBanner(`Level ${levelIndex + 1} complete!`, "win");
       nextLevelBtn.hidden = false;
       nextLevelBtn.classList.add("pulse");
+      tryAgainBtn.hidden = true;
+      triggerCelebration();
     } else {
       showBanner("All levels cleared!", "win");
+      triggerCelebration();
     }
   } else if (moves === 0) {
+    gameOver = true;
+    levelComplete = false;
+    updateBoardState();
     showBanner("Out of moves. Try again!", "lose");
+    tryAgainBtn.hidden = false;
   }
 }
 
@@ -701,8 +713,11 @@ function startLevel(index) {
   score = 0;
   moves = currentLevel().moves;
   levelComplete = false;
+  gameOver = false;
   nextLevelBtn.hidden = true;
   nextLevelBtn.classList.remove("pulse");
+  tryAgainBtn.hidden = true;
+  triggerCelebration();
   selectedPath = [];
   looped = false;
   selectedColor = null;
@@ -731,6 +746,22 @@ function nextLevel() {
 
 function updateBoardState() {
   boardEl.classList.toggle("complete", levelComplete);
+  boardEl.classList.toggle("gameover", gameOver);
+}
+
+function triggerCelebration() {
+  const dots = gridEl.querySelectorAll(".dot");
+  dots.forEach((dot) => {
+    const jump = -6 - Math.random() * 10;
+    dot.style.setProperty("--jump", `${jump}px`);
+    const delay = Math.random() * 180;
+    setTimeout(() => {
+      dot.classList.add("celebrate");
+    }, delay);
+  });
+  setTimeout(() => {
+    dots.forEach((dot) => dot.classList.remove("celebrate"));
+  }, 1100);
 }
 
 function ensureAudio() {
@@ -779,6 +810,33 @@ function toggleCheatMode() {
   cheatEnabled = !cheatEnabled;
   cheatToggleBtn.textContent = `Cheat Mode: ${cheatEnabled ? "On" : "Off"}`;
   clearClickTracker();
+}
+
+function triggerWinDebug() {
+  score = currentLevel().target;
+  levelComplete = true;
+  gameOver = false;
+  updateStats();
+  updateBoardState();
+  showBanner(`Level ${levelIndex + 1} complete!`, "win");
+  nextLevelBtn.hidden = levelIndex >= LEVELS.length - 1;
+  if (!nextLevelBtn.hidden) {
+    nextLevelBtn.classList.add("pulse");
+  }
+  tryAgainBtn.hidden = true;
+  triggerCelebration();
+}
+
+function triggerLoseDebug() {
+  moves = 0;
+  gameOver = true;
+  levelComplete = false;
+  updateStats();
+  updateBoardState();
+  showBanner("Out of moves. Try again!", "lose");
+  tryAgainBtn.hidden = false;
+  nextLevelBtn.hidden = true;
+  nextLevelBtn.classList.remove("pulse");
 }
 
 function clearClickTracker() {
@@ -832,5 +890,10 @@ window.addEventListener("load", () => {
 nextLevelBtn.addEventListener("click", nextLevel);
 soundToggleBtn.addEventListener("click", toggleSound);
 cheatToggleBtn.addEventListener("click", toggleCheatMode);
+tryAgainBtn.addEventListener("click", restartGame);
+if (debugWinBtn && debugLoseBtn) {
+  debugWinBtn.addEventListener("click", triggerWinDebug);
+  debugLoseBtn.addEventListener("click", triggerLoseDebug);
+}
 
 setupBoard();

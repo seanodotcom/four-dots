@@ -10,7 +10,7 @@
   <div class="scene">
     <header class="topbar">
       <div>
-        <h1>Four Dots</h1>
+        <h1>Four Dots <span class="version">v0.1.4</span></h1>
         <p class="subtitle">Connect matching dots. Make a loop to clear a whole color.</p>
       </div>
       <div class="stats">
@@ -36,7 +36,7 @@
     <main class="board-wrap">
       <div class="board" id="board" aria-label="Game board" role="application">
         <canvas id="pathCanvas"></canvas>
-        <div class="grid" id="grid"></div>
+                <div class="grid" id="grid"></div>
         <div id="banner" class="banner board-banner" aria-live="polite"></div>
       </div>
       <aside class="panel">
@@ -54,7 +54,11 @@
           <button id="nextLevel" class="cta ghost" hidden>Next Level</button>
           <button id="soundToggle" class="cta ghost">Sound: On</button>
           <button id="cheatToggle" class="cta ghost">Cheat Mode: Off</button>
-          <button id="restart" class="cta">Restart</button>
+          <button id="tryAgain" class="cta" hidden>Try Again</button>
+          <div class="debug">
+            <button id="debugWin" class="cta ghost">Debug: Win</button>
+            <button id="debugLose" class="cta ghost">Debug: Lose</button>
+          </div>
         </div>
       </aside>
     </main>
