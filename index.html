@@ -10,10 +10,10 @@
   <div class="scene">
     <header class="topbar">
       <div>
-        <h1>Four Dots <span class="version">v0.1.4</span></h1>
+        <h1>Four Dots <span class="version">v0.1.5</span></h1>
         <p class="subtitle">Connect matching dots. Make a loop to clear a whole color.</p>
       </div>
-      <div class="stats">
+      <div class="stats status-bar">
         <div class="stat">
           <span class="label">Score</span>
           <span id="score" class="value">0</span>
@@ -31,6 +31,20 @@
           <span id="target" class="value">200</span>
         </div>
       </div>
+      <div class="menu-wrap" aria-label="Game menu">
+        <button class="menu-toggle" id="menuToggle" aria-haspopup="true" aria-expanded="false" aria-controls="menuPanel">
+          <span class="menu-dot"></span>
+          <span class="menu-dot"></span>
+          <span class="menu-dot"></span>
+        </button>
+        <div class="menu-panel" id="menuPanel" role="menu" aria-hidden="true">
+          <button id="menuHowTo" class="menu-item" role="menuitem">How to Play</button>
+          <button id="menuSoundToggle" class="menu-item" role="menuitem">Sound: On</button>
+          <button id="menuCheatToggle" class="menu-item" role="menuitem">Cheat Mode: Off</button>
+          <button id="menuDebugWin" class="menu-item" role="menuitem">Debug: Win</button>
+          <button id="menuDebugLose" class="menu-item" role="menuitem">Debug: Lose</button>
+        </div>
+      </div>
     </header>
 
     <main class="board-wrap">
@@ -46,15 +60,14 @@
             <li>Drag across adjacent dots of the same color.</li>
             <li>Release to clear the chain.</li>
             <li>Make a loop to clear every dot of that color.</li>
+            <li>Reach the target score before you run out of moves.</li>
           </ul>
         </div>
         <div class="panel-card">
-          <h2>Goal</h2>
-          <p>Reach the target score before you run out of moves.</p>
+          <h2>Controls</h2>
           <button id="nextLevel" class="cta ghost" hidden>Next Level</button>
           <button id="soundToggle" class="cta ghost">Sound: On</button>
           <button id="cheatToggle" class="cta ghost">Cheat Mode: Off</button>
-          <button id="tryAgain" class="cta" hidden>Try Again</button>
           <div class="debug">
             <button id="debugWin" class="cta ghost">Debug: Win</button>
             <button id="debugLose" class="cta ghost">Debug: Lose</button>
@@ -62,6 +75,34 @@
         </div>
       </aside>
     </main>
+
+    <div class="modal" id="howToModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="howToTitle">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="howToTitle">How to Play</h2>
+          <button class="modal-close" type="button" data-modal-close>Close</button>
+        </div>
+        <ul class="modal-list">
+          <li>Drag across adjacent dots of the same color.</li>
+          <li>Release to clear the chain.</li>
+          <li>Make a loop to clear every dot of that color.</li>
+          <li>Reach the target score before you run out of moves.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="modal" id="statusModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="statusTitle">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="statusTitle">Out of moves!</h2>
+          <button class="modal-close" type="button" data-modal-close>Close</button>
+        </div>
+        <p id="statusMessage" class="modal-message">Try again?</p>
+        <div class="modal-actions">
+          <button id="tryAgain" class="cta">Try Again</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 

@@ -24,6 +24,17 @@ const cheatToggleBtn = document.getElementById("cheatToggle");
 const tryAgainBtn = document.getElementById("tryAgain");
 const debugWinBtn = document.getElementById("debugWin");
 const debugLoseBtn = document.getElementById("debugLose");
+const menuToggleBtn = document.getElementById("menuToggle");
+const menuPanel = document.getElementById("menuPanel");
+const menuHowToBtn = document.getElementById("menuHowTo");
+const menuSoundToggleBtn = document.getElementById("menuSoundToggle");
+const menuCheatToggleBtn = document.getElementById("menuCheatToggle");
+const menuDebugWinBtn = document.getElementById("menuDebugWin");
+const menuDebugLoseBtn = document.getElementById("menuDebugLose");
+const howToModal = document.getElementById("howToModal");
+const statusModal = document.getElementById("statusModal");
+const statusTitle = document.getElementById("statusTitle");
+const statusMessage = document.getElementById("statusMessage");
 
 let grid = [];
 let score = 0;
@@ -275,6 +286,15 @@ function updateStats() {
   levelEl.textContent = levelIndex + 1;
 }
 
+function syncMenuLabels() {
+  if (menuSoundToggleBtn) {
+    menuSoundToggleBtn.textContent = `Sound: ${soundEnabled ? "On" : "Off"}`;
+  }
+  if (menuCheatToggleBtn) {
+    menuCheatToggleBtn.textContent = `Cheat Mode: ${cheatEnabled ? "On" : "Off"}`;
+  }
+}
+
 function clearBanner() {
   bannerEl.textContent = "";
   bannerEl.className = "banner";
@@ -283,6 +303,35 @@ function clearBanner() {
 function showBanner(text, type) {
   bannerEl.textContent = text;
   bannerEl.className = `banner ${type}`;
+}
+
+function openModal(modal) {
+  if (!modal) return;
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeModal(modal) {
+  if (!modal) return;
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function showStatusModal(title, message) {
+  if (statusTitle) statusTitle.textContent = title;
+  if (statusMessage) statusMessage.textContent = message;
+  openModal(statusModal);
+}
+
+function closeMenu() {
+  if (!menuPanel || !menuToggleBtn) return;
+  menuPanel.setAttribute("aria-hidden", "true");
+  menuToggleBtn.setAttribute("aria-expanded", "false");
+}
+
+function toggleMenu() {
+  if (!menuPanel || !menuToggleBtn) return;
+  const isHidden = menuPanel.getAttribute("aria-hidden") !== "false";
+  menuPanel.setAttribute("aria-hidden", isHidden ? "false" : "true");
+  menuToggleBtn.setAttribute("aria-expanded", isHidden ? "true" : "false");
 }
 
 function dotFromEvent(target) {
@@ -476,7 +525,6 @@ function endSelection() {
       showBanner(`Level ${levelIndex + 1} complete!`, "win");
       nextLevelBtn.hidden = false;
       nextLevelBtn.classList.add("pulse");
-      tryAgainBtn.hidden = true;
       triggerCelebration();
     } else {
       showBanner("All levels cleared!", "win");
@@ -486,8 +534,7 @@ function endSelection() {
     gameOver = true;
     levelComplete = false;
     updateBoardState();
-    showBanner("Out of moves. Try again!", "lose");
-    tryAgainBtn.hidden = false;
+    showStatusModal("Out of moves!", "Try again?");
   }
 }
 
@@ -716,7 +763,6 @@ function startLevel(index) {
   gameOver = false;
   nextLevelBtn.hidden = true;
   nextLevelBtn.classList.remove("pulse");
-  tryAgainBtn.hidden = true;
   triggerCelebration();
   selectedPath = [];
   looped = false;
@@ -735,6 +781,7 @@ function setupBoard() {
 }
 
 function restartGame() {
+  closeModal(statusModal);
   startLevel(levelIndex);
 }
 
@@ -803,12 +850,14 @@ function playSound(type) {
 function toggleSound() {
   soundEnabled = !soundEnabled;
   soundToggleBtn.textContent = `Sound: ${soundEnabled ? "On" : "Off"}`;
+  syncMenuLabels();
   if (!soundEnabled && audioCtx) audioCtx.suspend();
 }
 
 function toggleCheatMode() {
   cheatEnabled = !cheatEnabled;
   cheatToggleBtn.textContent = `Cheat Mode: ${cheatEnabled ? "On" : "Off"}`;
+  syncMenuLabels();
   clearClickTracker();
 }
 
@@ -823,7 +872,6 @@ function triggerWinDebug() {
   if (!nextLevelBtn.hidden) {
     nextLevelBtn.classList.add("pulse");
   }
-  tryAgainBtn.hidden = true;
   triggerCelebration();
 }
 
@@ -833,8 +881,7 @@ function triggerLoseDebug() {
   levelComplete = false;
   updateStats();
   updateBoardState();
-  showBanner("Out of moves. Try again!", "lose");
-  tryAgainBtn.hidden = false;
+  showStatusModal("Out of moves!", "Try again?");
   nextLevelBtn.hidden = true;
   nextLevelBtn.classList.remove("pulse");
 }
@@ -896,4 +943,70 @@ if (debugWinBtn && debugLoseBtn) {
   debugLoseBtn.addEventListener("click", triggerLoseDebug);
 }
 
+if (menuToggleBtn) {
+  menuToggleBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleMenu();
+  });
+}
+
+if (menuPanel) {
+  menuPanel.addEventListener("click", (event) => event.stopPropagation());
+}
+
+document.addEventListener("click", () => {
+  closeMenu();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeMenu();
+    closeModal(howToModal);
+    closeModal(statusModal);
+  }
+});
+
+if (menuHowToBtn) {
+  menuHowToBtn.addEventListener("click", () => {
+    closeMenu();
+    openModal(howToModal);
+  });
+}
+
+if (menuSoundToggleBtn) {
+  menuSoundToggleBtn.addEventListener("click", () => {
+    closeMenu();
+    toggleSound();
+  });
+}
+
+if (menuCheatToggleBtn) {
+  menuCheatToggleBtn.addEventListener("click", () => {
+    closeMenu();
+    toggleCheatMode();
+  });
+}
+
+if (menuDebugWinBtn) {
+  menuDebugWinBtn.addEventListener("click", () => {
+    closeMenu();
+    triggerWinDebug();
+  });
+}
+
+if (menuDebugLoseBtn) {
+  menuDebugLoseBtn.addEventListener("click", () => {
+    closeMenu();
+    triggerLoseDebug();
+  });
+}
+
+document.querySelectorAll("[data-modal-close]").forEach((button) => {
+  button.addEventListener("click", () => {
+    closeModal(howToModal);
+    closeModal(statusModal);
+  });
+});
+
 setupBoard();
+syncMenuLabels();
